@@ -19,3 +19,5 @@ Usage
 Please see node help and provided examples.
 
 ![Example flow for entrance node](/examples/inputtest.jpg)
+
+![Example flow for a few gates](/examples/inoperation.jpg)

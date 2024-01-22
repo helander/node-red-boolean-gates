@@ -1,0 +1,41 @@
+{
+    "name": "@helander/node-red-boolean-gates",
+    "version": "1.0.0",
+    "description": "A Node-RED node to provide a boolean gate and to interconnect them into a boolean network.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/helander/node-red-boolean-gates.git",
+        "directory": "tree/"
+    },
+    "license": "Apache-2.0",
+    "keywords": [
+        "node-red"
+    ],
+    "scripts": {
+        "lint": "eslint *.js  --max-warnings=0",
+        "linthtml": "eslint --ext .html . --max-warnings=0",
+        "lintfix": "eslint *.js --max-warnings=0 --fix",
+        "linthtmlfix": "eslint --ext .html . --max-warnings=0 --fix"
+    },
+    "node-red": {
+        "nodes": {
+            "boolean gate": "gate.js"
+        }
+    },
+    "author": {
+        "name": "Lars-Erik Helander",
+        "email": "lehswe@gmail.com",
+        "url": "https://helander.network"
+    },
+    "contributors": [
+        {
+            "name": "@helander"
+        }
+    ],
+    "devDependencies": {
+        "eslint": "^8.56.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-plugin-html": "^7.1.0",
+        "eslint-plugin-import": "^2.29.1"
+    }
+}

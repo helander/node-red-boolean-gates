@@ -1,0 +1,184 @@
+
+<script type="text/html" data-template-name="boolean gate">
+    <div class="form-row">
+	    <label for="node-input-gatetype"><i class="fa fa-cog"></i> Logic function</label>
+	    <input type="text" id="node-input-gatetype" >
+    </div>
+</script>
+
+<script type="text/javascript">
+  /* global RED, $ */
+  /* eslint no-undef: "error" */
+
+  RED.nodes.registerType('boolean gate', {
+    category: 'logic',
+    color: '#c7e9c0',
+    defaults: {
+      gatetype: { value: 'not', required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-chevron-circle-right',
+    label() {
+      switch (this.gatetype) {
+        case 'and': return 'AND';
+        case 'or': return 'OR';
+        case 'not': return 'NOT';
+        case 'nand': return 'NAND';
+        case 'nor': return 'NOR';
+        case 'entrance': return 'Entrance';
+        default: return 'Gate';
+      }
+    },
+    oneditprepare() {
+      $('#node-input-gatetype').typedInput({
+        types: [
+          {
+            value: 'gate',
+            options: [
+              { value: 'and', label: 'AND' },
+              { value: 'or', label: 'OR' },
+              { value: 'not', label: 'NOT' },
+              { value: 'nand', label: 'NAND' },
+              { value: 'nor', label: 'NOR' },
+              { value: 'entrance', label: 'Entrance' },
+            ],
+          },
+        ],
+      });
+    },
+  });
+</script>
+
+
+<script type="text/html" data-help-name="boolean gate">
+<p>Build a network of boolean logic gates.</p>
+
+<h3>Inputs</h3>
+     <ol class="node-ports">
+         <li>Boolean message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">boolean|number|object</span></dt>
+                 <dd>boolean input representation.</dd>
+                 <dt>topic <span class="property-type">string</span></dt>
+                 <dd>the logical input name.</dd>
+             </dl>
+         </li>
+         <li>Configuration message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">string</span></dt>
+                 <dd>empty string ("").</dd>
+                 <dt>topic <span class="property-type">string</span></dt>
+                 <dd>the logical input name.</dd>
+             </dl>
+         </li>
+     </ol>
+
+<h3>Outputs</h3>
+
+     <ol class="node-ports">
+         <li>Boolean message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">boolean</span></dt>
+                 <dd>the result of the gate's boolean operation.</dd>
+                 <dt>topic <span class="property-type">string</span></dt>
+                 <dd>the node Id of the gate node.</dd>
+             </dl>
+         </li>
+         <li>Configuration message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">string</span></dt>
+                 <dd>empty string ("").</dd>
+                 <dt>topic <span class="property-type">string</span></dt>
+                 <dd>the node Id of the gate node.</dd>
+             </dl>
+         </li>
+     </ol>
+
+<h3>Details</h3>
+
+<h4>Function</h4>
+
+<p> Each gate is a single node. Each node is configured to be one of:
+<ul>
+<li>AND gate</li>
+<li>OR gate</li>
+<li>NAND gate</li>
+<li>NOR gate</li>
+<li>NOT gate</li>
+<li>Entrance node</li>
+<ul>
+</p>
+
+<p>Since node-red does not allow multiple inputs to a node,
+each gate input is multiplexed using message topic values.
+Messages for a particular gate input are tagged with a specfic
+message topic <code>msg.topic</code>.</p>
+
+<p>Within a group of interconnected gate nodes, the topic tagging of messages is automated.</p>
+
+<p>For inputs from outside of a cluster of interconnected gate nodes special concern is required.
+<ul>
+<li>if the gate node you are connecting to only will have one logical input (a single topic used), no specific setup/configuration is required.</li>
+<li>if the gate node you are connecting to will have two or more logical inputs (multiple topics used), please setup using configuration messages.</li>
+</ul></p>
+
+<h4>Entrance node</h4>
+Instead of adding nodes for injection of configuration message and explicit tagging of external messages, an Entrance node may be used. The entrance node is placed at points in the flow
+where messages are entering into a cluster of gate nodes.
+
+<h4>Configuration messages</h4>
+
+<p>Within the configuration period of the node, this is equal to the first 5 seconds after the node is started, make sure to inject/send the
+following "configuration" message to the node. This could be done using a standard Inject node or use an Entrance node<.</p>
+
+The gate node emits a configuration message during the startup of the node (only once).
+
+
+<h4>Boolean messages</h4>
+
+<p>At any time send a message with "boolean" content according to the description below. Make sure that the topic matches a previously injected 
+"configuration" message. In case you know that this "boolean" message will occur at the gate node input before the end of the configuration period,
+you do not have to supply a specific "configuration" message.</p>
+
+<p>The following payloads are accepted as boolean input
+<ul>
+<li>boolean value<ul><li>true => true</li><li>false => false</li></ul></li>
+<li>number value<ul><li> above 0.5 => true</li><li>below 0.5 => false</li></ul></li>
+<li>object with property named On, where the property value is either boolean or number. Same boolean representation as boolean and number respectively.</li>
+</ul></p>
+
+<h4>Delayed output</h4>
+
+<p>A gate node is not outputting any boolean gate output messages until the node is configured and the node inputs are considered ready.
+The gate node is in configured state approximatively 5 seconds after the node was started. The gate node is considered ready when
+it has received "boolean" messages for all of its logical inputs.</p>
+
+<p>The gate node stores the boolean state information from all of its logical inputs in the node's context. Once the gate node produces an
+output message, the boolean payload in that message is based on the latest information of the respective inputs.</p>
+
+<h4>Node status</h4>
+<p>Errors are indicated using red colour. The following errors may show up:
+<ul>
+<li>No topic - an incoming message had no topic property. Not for entrance nodes.</li>
+<li>Payload  - unknown boolean payload value. Shows payload content.</li>
+<li>Late     - topic value not seen during configuration period. Shows topic value.</li>
+<li>More than 1 input - a NOT gate can only have 1 logical input, error occurs if more than 1 tag value shows up at the gate.</li>
+</ul>
+</p>
+
+<p>Other (colour, shape) combinations are:
+<ul>
+<li>(blue, * )      Configuration mode</li>
+<li>(grey, * )      Not ready (one or more inputs are missing input values</li>
+<li>( *  , ring)    Node output: false</li>
+<li>( *  , dot)     Node output: true</li>
+<li>(yellow, ring)  Node output: undefined</li>
+</ul>
+</p>
+
+<h3>References</h3>
+    <ul>
+        <li><a href="https://github.com/helander/node-red-boolean-gates.git">GitHub</a> - the nodes github repository</li>
+    </ul>
+</script>

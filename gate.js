@@ -12,7 +12,7 @@ module.exports = (RED) => {
   const GATE_NOT = 'not';
   const GATE_ENTRANCE = 'entrance';
   const LOGICAL_INPUT_ENTRANCE = 'entrance';
-  const nodeinputs = {};
+  //const nodeinputs = {};
   const gatenodes = {};
 
   function BooleanGateNode(config) {
@@ -21,35 +21,12 @@ module.exports = (RED) => {
     const context = node.context();
     this.operator = config.gatetype;
     this.filter = config.filter;
+    this.nodeinputs = {};
     if (config.output === 'undefined') {
       delete this.output;
     } else {
       this.output = config.output === 'true';
     }
-    this.nodeinputs = {};
-
-    console.log('config',this.output);
-
-    // Unofficial api used to retrieve nodeinputs
-    // In case there are problems, see thee hook in this module.
-    RED.nodes.eachNode((from) => {
-      try {
-        if (from.wires !== undefined) {
-          if (from.wires.length > 0) {
-            for(let port=0; port < from.wires.length; port=port+1) {
-              const to = from.wires[port];
-              for(let i=0; i < to.length; i=i+1) {
-                if (to[i] == node.id) {
-                  this.nodeinputs[`${from.id}:${port}`] = {};
-                }
-              }
-            }
-          }
-        }
-      } catch(error) {
-         node.error('Problem when using unofficial API.'+error);
-      }
-    });
 
     /**
      *
@@ -91,14 +68,7 @@ module.exports = (RED) => {
           this.nodeinputs = {};
           this.nodeinputs[LOGICAL_INPUT_ENTRANCE] = {};
           msg.topic = LOGICAL_INPUT_ENTRANCE;
-        } /*else {
-          // Uncomment this section to use input from hook rather than using
-          // the unofficial API
-          this.nodeinputs = nodeinputs[node.id];
-        }*/
-        context.set('nodeinputs',this.nodeinputs);
-        context.set('id',node.id);
-        context.set('operator',this.operator);
+        }
         if (msg.topic === undefined || msg.topic === '') {
           node.status({ fill: 'red', shape: 'dot', text: 'No topic' });
           return undefined;
@@ -161,7 +131,6 @@ module.exports = (RED) => {
      *
      */
     this.value = () => {
-      // uses context.get('inputs') and this.operator to calculate output value
       let output;
       switch (this.operator) {
         case GATE_AND:
@@ -218,7 +187,6 @@ module.exports = (RED) => {
       if (this.defaultOutput !== undefined) return true;
       for (let i = 0; i < Object.keys(this.nodeinputs).length; i += 1) {
         const key = Object.keys(this.inputs)[i];
-        //console.log('key',key,'inputs[key]',this.inputs[key]);
         if (typeof this.inputs[key] !== 'boolean') return false;
       }
       return true;
@@ -229,6 +197,30 @@ module.exports = (RED) => {
      * Node startup
      *
      */
+    // Find the wires leading to this node
+    RED.nodes.eachNode((from) => {
+      try {
+        if (from.wires !== undefined) {
+          if (from.wires.length > 0) {
+            for(let port=0; port < from.wires.length; port=port+1) {
+              const to = from.wires[port];
+              for(let i=0; i < to.length; i=i+1) {
+                if (to[i] == node.id) {
+                  this.nodeinputs[`${from.id}:${port}`] = {};
+                }
+              }
+            }
+          }
+        }
+      } catch(error) {
+         node.error('Problem when using unofficial API.'+error);
+      }
+    });
+
+    context.set('nodeinputs',this.nodeinputs);
+    context.set('id',node.id);
+    context.set('operator',this.operator);
+
     this.inputs = {};
     context.set('inputs', this.inputs);
     let filterTimer;
@@ -253,21 +245,11 @@ module.exports = (RED) => {
     node.log(`End of startup for node ${node.id} ${this.operator}`);
     node.status({ fill: 'grey', shape: 'dot' });
     gatenodes[node.id] = {};
-    /*// Uncomment this if hook is used instead of unofficial API.
-    node.send({});
-    */
   }
 
   RED.nodes.registerType('boolean gate', BooleanGateNode);
 
   RED.hooks.add('preRoute', (sendEvent) => {
-    /*// Uncomment section to use hook instead of unofficial API to find out wiring
-    if (nodeinputs[sendEvent.destination.id] === undefined) nodeinputs[sendEvent.destination.id] = {};
-    nodeinputs[sendEvent.destination.id][`${sendEvent.source.id}:${sendEvent.source.port}`] = {};
-    if (sendEvent.msg.payload === undefined) {
-      return false;
-    }
-    */
     // Messages to gate nodes will have topic set to port of source node
     if (gatenodes[sendEvent.destination.id] !== undefined) {
       sendEvent.msg.topic = `${sendEvent.source.id}:${sendEvent.source.port}`;

@@ -70,6 +70,10 @@ This function is not available in case the `Startup filter` period is 0 seconds.
 
 The entrance function regards all incoming wires as one single logical input. This means that the input value in any incoming message is instantly reflected in the nodes output. Of course, the `Startup filter` setting apply, so the output reflection may not be instant.
 
+# Implementation info
+
+The component uses the Node-RED Messaging hook API to ensure that the topic of each message that is sent to a gate node is set to the identity of the message source (node id and port index).
+
 # Help and examples
 
 Please see node help and provided examples.

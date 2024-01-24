@@ -4,6 +4,14 @@
 	    <label for="node-input-gatetype"><i class="fa fa-cog"></i> Logic function</label>
 	    <input type="text" id="node-input-gatetype" >
     </div>
+    <div class="form-row">
+	    <label for="node-input-filter"><i class="fa fa-cog"></i> Startup filter</label>
+	    <input type="text" id="node-input-filter" >
+    </div>
+    <div class="form-row">
+	    <label for="node-input-output"><i class="fa fa-cog"></i> Default output</label>
+	    <input type="text" id="node-input-output" >
+    </div>
 </script>
 
 <script type="text/javascript">
@@ -15,6 +23,8 @@
     color: '#c7e9c0',
     defaults: {
       gatetype: { value: 'not', required: true },
+      filter: { value: '0', validate:RED.validators.number(), required: false},
+      output: { value: 'undefined', required: false},
     },
     inputs: 1,
     outputs: 1,
@@ -46,6 +56,20 @@
           },
         ],
       });
+
+      $('#node-input-output').typedInput({
+        types: [
+          {
+            value: 'output',
+            options: [
+              { value: 'undefined', label: 'No output' },
+              { value: 'true', label: 'true' },
+              { value: 'false', label: 'false' },
+            ],
+          },
+        ],
+      });
+
     },
   });
 </script>

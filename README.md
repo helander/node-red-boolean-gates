@@ -80,6 +80,6 @@ The component uses the Node-RED Messaging hook API to ensure that the topic of e
 
 Please see node help and provided examples.
 
-![Example flow for entrance node](/examples/inputtest.jpg)
+![Example flow for entrance node](/examples/inputtest.png)
 
 ![Example flow for a few gates](/examples/inoperation.jpg)

@@ -4,11 +4,11 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node that allows the c
 With the help of Node-RED's wiring mechanism it is then possible to interconnect a set of logic gate instances to form a boolean circuit.
 
 The boolean function of each node instance is configurable from the following selection:
- - AND
- - OR
- - NOT
- - NAND
- - NOR
+ * AND
+ * OR
+ * NOT
+ * NAND
+ * NOR
 
 In addition to this the selection also contains an 'Entrance' (or join) function (but more on this later).
 
@@ -37,9 +37,9 @@ for this input.
 
 One observation from the above is that in order to calculate the correct value for a boolean function, values for all of its inputs must have been received. 
 
-- How do we ensure that all input values have been provided, when the boolean function output needs to be calculated ?
-- Can we ensure that all input values are provided when they are required?
-- If not, what should the system do?
+* How do we ensure that all input values have been provided, when the boolean function output needs to be calculated ?
+* Can we ensure that all input values are provided when they are required?
+* If not, what should the system do?
 
 The answers to these questions requires knowledge about and insights into the solution/application to be designed. This things can not be managed by Node-RED and its plugin components, but
 falls on the solution/application (creator of the Node-RED flows) to deal with. However the @helander/node-red-boolean-gates module incorporates a couple of configurable features that can
@@ -62,8 +62,8 @@ This is actually the default way these node instances work. If you want this you
 ### Configuration options
 
 In addition to selecting the boolan function (or entrance function) of a node, the following configuration options are available:
- - Startup filter   A time period, in seconds, during node startup when no node output is produced. 
- - Default output   Select what to happen if not enough input is available. No output, true or false are the options. 
+* 'Startup filter': A time period, in seconds, during node startup when no node output is produced. 
+* 'Default output': Select what to happen if not enough input is available. No output, true or false are the options. 
 This function is not available in case the Startup filter period is 0 seconds.
 
 # Help and examples

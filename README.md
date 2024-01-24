@@ -62,9 +62,9 @@ This is actually the default way these node instances work. If you want this you
 ### Configuration options
 
 In addition to selecting the boolan function (or entrance function) of a node, the following configuration options are available:
-* 'Startup filter': A time period, in seconds, during node startup when no node output is produced. 
-* 'Default output': Select what to happen if not enough input is available. No output, true or false are the options. 
-This function is not available in case the Startup filter period is 0 seconds.
+* `Startup filter` - A time period, in seconds, during node startup when no node output is produced.
+* `Default output` - Select what to happen if not enough input is available. No output, true or false are the options. 
+This function is not available in case the `Startup filter` period is 0 seconds.
 
 # Help and examples
 

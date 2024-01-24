@@ -66,6 +66,10 @@ In addition to selecting the boolan function (or entrance function) of a node, t
 * `Default output` - Select what to happen if not enough input is available. No output, true or false are the options. 
 This function is not available in case the `Startup filter` period is 0 seconds.
 
+### Entrance function
+
+The entrance function regards all incoming wires as one single logical input. This means that the input value in any incoming message is instantly reflected in the nodes output. Of course, the `Startup filter` setting apply, so the output reflection may not be instant.
+
 # Help and examples
 
 Please see node help and provided examples.

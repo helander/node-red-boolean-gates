@@ -42,7 +42,7 @@ One observation from the above is that in order to calculate the correct value f
 * If not, what should the system do?
 
 The answers to these questions requires knowledge about and insights into the solution/application to be designed. This things can not be managed by Node-RED and its plugin components, but
-falls on the solution/application (creator of the Node-RED flows) to deal with. However the @helander/node-red-boolean-gates module incorporates a couple of configurable features that can
+falls on the solution/application (creator of the Node-RED flows) to deal with. However the `@helander/node-red-boolean-gates` module incorporates a couple of configurable features that can
 help the solution/application designer.
 
 ### Solution design hints
@@ -65,6 +65,8 @@ In addition to selecting the boolan function (or entrance function) of a node, t
 * `Startup filter` - A time period, in seconds, during node startup when no node output is produced.
 * `Default output` - Select what to happen if not enough input is available. No output, true or false are the options. 
 This function is not available in case the `Startup filter` period is 0 seconds.
+
+It should be noted that, the application of these configurations might not be required on all nodes in a flow. If a node "early" in a flow do not produce output, that will impact other nodes further "down" the flow. In many cases, it may be enough to apply these configurations in the gate nodes where signals are entering the boolean "circuit".
 
 ### Entrance function
 

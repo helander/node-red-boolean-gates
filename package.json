@@ -19,7 +19,9 @@
     },
     "node-red": {
         "nodes": {
-            "boolean gate": "gate.js"
+            "boolean gate": "gate.js",
+            "boolean table": "table.js",
+            "boolean generator": "generator.js"
         }
     },
     "author": {
@@ -37,5 +39,9 @@
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-html": "^7.1.0",
         "eslint-plugin-import": "^2.29.1"
+    },
+    "dependencies": {
+        "@helander/quine-mccluskey-js": "^1.0.0",
+        "@node-red/runtime": "^3.1.3"
     }
 }

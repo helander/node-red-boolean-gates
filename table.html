@@ -1,0 +1,135 @@
+
+<script type="text/html" data-template-name="boolean table">
+    <select id="nmbinputs">
+     <option value="1">1 - A</option>
+     <option value="2">2 - AB</option>
+     <option value="3" selected>3 - ABC</option>
+     <option value="4">4 - ABCD</option>
+     <option value="5">5 - ABCDE</option>
+     <option value="6">6 - ABCDEF</option>
+     <option value="7">7 - ABCDEFG</option>
+     <option value="8">8 - ABCDEFGH</option>
+    </select>
+    <table><tbody id="truthtable"></tbody></table>
+    
+</script>
+
+<script type="text/javascript">
+  /* global RED */
+  /* eslint no-undef: "error" */
+
+  function tablerows(truthjson) {
+    const truth = JSON.parse(truthjson);
+    const nmbInputsSelector = document.getElementById('nmbinputs');
+    const tablebody = document.getElementById('truthtable');
+    if (Object.keys(truth).length === 0) {
+      const n = Number(nmbInputsSelector.value);
+      const rows = document.querySelectorAll('#truthtable tr');
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i];
+        row.remove();
+      }
+      for (let i = 0; i < 2 ** n; i += 1) {
+        const row = tablebody.insertRow(i);
+        const inputs = i.toString(2).padStart(n, '0');
+        const value = `<select id="d${i}"><option value="0" selected>0</option><option value="1">1</option><option value="-">-</option>k`;
+        const inputsCell = row.insertCell(0);
+        const valueCell = row.insertCell(1);
+        inputsCell.innerHTML = inputs;
+        valueCell.innerHTML = value;
+      }
+    } else {
+      nmbInputsSelector.value = Object.keys(truth)[0].length;
+      nmbInputsSelector.style.display = 'none';
+      const sorted = Object.keys(truth).sort();
+      for (let i = 0; i < sorted.length; i += 1) {
+        const inputs = sorted[i];
+        const output = truth[inputs];
+
+        const row = tablebody.insertRow(i);
+        const value = `<select id="d${i}"><option value="0" >0</option><option value="1">1</option><option value="-">-</option>`;
+        const inputsCell = row.insertCell(0);
+        const valueCell = row.insertCell(1);
+        inputsCell.innerHTML = inputs;
+        valueCell.innerHTML = value;
+        valueCell.firstChild.value = output;
+      }
+    }
+  }
+
+  RED.nodes.registerType('boolean table', {
+    category: 'logic',
+    color: '#c7e9c0',
+    defaults: {
+      truthjson: { value: '{}', required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-table',
+    label() {
+      return 'truth table';
+    },
+    oneditprepare() {
+      if (this.truthjson === undefined) this.truthjson = '{}';
+      const truth = JSON.parse(this.truthjson);
+      if (Object.keys(truth).length === 0) {
+        document.getElementById('nmbinputs').addEventListener('change', () => {
+          tablerows(this.truthjson);
+        });
+      }
+      tablerows(this.truthjson);
+    },
+    oneditsave() {
+      const table = {};
+      const rows = document.querySelectorAll('#truthtable tr');
+
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i];
+        const inputsCell = row.cells[0];
+        const valueCell = row.cells[1];
+        const inputs = inputsCell.textContent;
+        const output = valueCell.firstChild.value;
+        table[inputs] = output;
+      }
+      this.truthjson = JSON.stringify(table);
+    },
+  });
+</script>
+
+
+<script type="text/html" data-help-name="boolean generator">
+<p>Generate a truth table.</p>
+
+
+<h3>Inputs</h3>
+     <ol class="node-ports">
+         <li>Any message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">any</span></dt>
+                 <dd>triggers output message.</dd>
+             </dl>
+         </li>
+     </ol>
+
+<h3>Outputs</h3>
+
+     <ol class="node-ports">
+         <li>Table message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">object (see below)</span></dt>
+                 <dd>truth table content.</dd>
+             </dl>
+         </li>
+     </ol>
+
+<h3>Details</h3>
+
+<p>The payload of the output message is an object with the two properties, 'ones' and 'dontcares'. Each of them is an array of input combinations.
+The 'ones' represents the table rows where the output is '1' and the 'dontcares' represents the table rows where the output is defined as 'don't care' (i.e. '0' or '1').
+</p>
+
+<h3>References</h3>
+    <ul>
+        <li><a href="https://github.com/helander/node-red-boolean-gates.git">GitHub</a> - the nodes github repository</li>
+    </ul>
+</script>

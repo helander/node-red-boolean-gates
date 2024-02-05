@@ -1,4 +1,3 @@
-
 <script type="text/html" data-template-name="boolean gate">
     <div class="form-row">
 	    <label for="node-input-gatetype"><i class="fa fa-cog"></i> Logic function</label>
@@ -22,22 +21,21 @@
     category: 'logic',
     color: '#c7e9c0',
     defaults: {
-      gatetype: { value: 'not', required: true },
-      filter: { value: '0', validate:RED.validators.number(), required: false},
-      output: { value: 'undefined', required: false},
+      gatetype: { value: 'equ', required: true },
+      filter: { value: '0', validate: RED.validators.number(), required: false },
+      output: { value: 'undefined', required: false },
+      nameprefix: { value: '', required: false },
     },
     inputs: 1,
-    outputs: 1,
-    icon: 'font-awesome/fa-chevron-circle-right',
+    outputs: 2,
+    icon() { return `${this.gatetype}.svg`; },
+    align: 'right',
     label() {
       switch (this.gatetype) {
-        case 'and': return 'AND';
-        case 'or': return 'OR';
-        case 'not': return 'NOT';
-        case 'nand': return 'NAND';
-        case 'nor': return 'NOR';
-        case 'entrance': return 'Entrance';
-        default: return 'Gate';
+        case 'and': return `${this.nameprefix || ''} [&]`;
+        case 'or': return `${this.nameprefix || ''} [≥1]`;
+        case 'equ': return `${this.nameprefix || ''} [1]`;
+        default: return `${this.nameprefix || ''} Gate`;
       }
     },
     oneditprepare() {
@@ -48,10 +46,7 @@
             options: [
               { value: 'and', label: 'AND' },
               { value: 'or', label: 'OR' },
-              { value: 'not', label: 'NOT' },
-              { value: 'nand', label: 'NAND' },
-              { value: 'nor', label: 'NOR' },
-              { value: 'entrance', label: 'Entrance' },
+              { value: 'equ', label: 'EQU' },
             ],
           },
         ],
@@ -69,7 +64,6 @@
           },
         ],
       });
-
     },
   });
 </script>
@@ -91,14 +85,12 @@
      </ol>
 
 <h3>Outputs</h3>
-
+<p>Each gate node as two output ports. Output messages are sent on both ports. One port is for the gate result and the other port is for the inverted result.</p>
      <ol class="node-ports">
          <li>Boolean message
              <dl class="message-properties">
                  <dt>payload <span class="property-type">boolean</span></dt>
                  <dd>the result of the gate's boolean operation.</dd>
-                 <dt>topic <span class="property-type">string</span></dt>
-                 <dd>the node Id of the gate node.</dd>
              </dl>
          </li>
      </ol>
@@ -111,10 +103,7 @@
 <ul>
 <li>AND gate</li>
 <li>OR gate</li>
-<li>NAND gate</li>
-<li>NOR gate</li>
-<li>NOT gate</li>
-<li>Entrance node</li>
+<li>EQU gate</li>
 <ul>
 </p>
 
@@ -140,15 +129,14 @@ message topic <code>msg.topic</code>.</p>
 <h4>Node status</h4>
 <p>Errors are indicated using red colour. The following errors may show up:
 <ul>
-<li>No topic - an incoming message had no topic property.</li>
 <li>Payload  - unknown boolean payload value. Shows payload content.</li>
-<li>More than 1 input - a NOT gate can only have 1 logical input, error occurs if more than 1 tag value shows up at the gate.</li>
 </ul>
 </p>
 
 <p>Other (colour, shape) combinations are:
 <ul>
 <li>(grey, * )      Not ready (one or more inputs are missing input values</li>
+<li>(blue, * )      Wires from more than one node/port (EQU gate)</li>
 <li>( *  , ring)    Node output: false</li>
 <li>( *  , dot)     Node output: true</li>
 <li>(yellow, ring)  Node output: none (no message sent)</li>

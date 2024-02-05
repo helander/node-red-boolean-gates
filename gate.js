@@ -4,23 +4,18 @@
  *
  */
 module.exports = (RED) => {
-  // const PAYLOAD_EMPTY = '';
   const GATE_AND = 'and';
-  const GATE_NAND = 'nand';
   const GATE_OR = 'or';
-  const GATE_NOR = 'nor';
-  const GATE_NOT = 'not';
-  const GATE_ENTRANCE = 'entrance';
-  const LOGICAL_INPUT_ENTRANCE = 'entrance';
-  //const nodeinputs = {};
+  const GATE_EQU = 'equ';
+  const LOGICAL_INPUT_SINGLE = 'single';
   const gatenodes = {};
 
   function BooleanGateNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
-    const context = node.context();
     this.operator = config.gatetype;
     this.filter = config.filter;
+    this.nameprefix = config.nameprefix;
     this.nodeinputs = {};
     if (config.output === 'undefined') {
       delete this.output;
@@ -37,8 +32,7 @@ module.exports = (RED) => {
      *
      */
     this.adaptPayload = (payload) => {
-      if (payload === undefined) return null;// PAYLOAD_EMPTY;
-      // if (payload === PAYLOAD_EMPTY) return PAYLOAD_EMPTY;
+      if (payload === undefined) return null;
       switch (typeof payload) {
         case 'boolean': return payload;
         case 'number': return (payload > 0.5);
@@ -62,13 +56,9 @@ module.exports = (RED) => {
      * The node's input message handler
      *
      */
-    this.on('input', (msg, send) => {
+    this.on('input', (inmsg, send) => {
+      const msg = inmsg;
       try {
-        if (this.operator === GATE_ENTRANCE) {
-          this.nodeinputs = {};
-          this.nodeinputs[LOGICAL_INPUT_ENTRANCE] = {};
-          msg.topic = LOGICAL_INPUT_ENTRANCE;
-        }
         if (msg.topic === undefined || msg.topic === '') {
           node.status({ fill: 'red', shape: 'dot', text: 'No topic' });
           return undefined;
@@ -78,11 +68,13 @@ module.exports = (RED) => {
           node.status({ fill: 'red', shape: 'ring', text: `Payload ${JSON.stringify(msg.payload)}` });
           return undefined;
         }
+
+        if (this.nodeinputs[LOGICAL_INPUT_SINGLE] !== undefined) msg.topic = LOGICAL_INPUT_SINGLE;
+
         this.inputs[msg.topic] = input;
-        context.set('inputs', this.inputs);
         if (this.isReady()) {
           const nodeValue = this.value();
-          send({ payload: nodeValue });
+          send([{ payload: nodeValue }, { payload: !nodeValue }]);
         }
         this.updateStatus();
       } catch (err) { node.log(`error  ${err}`); }
@@ -116,11 +108,10 @@ module.exports = (RED) => {
         fill = 'yellow';
         shape = 'ring';
       }
-      if (this.operator === GATE_NOT && Object.keys(this.nodeinputs).length > 1) {
-        node.status({ fill: 'red', shape: 'ring', text: 'More than 1 input' });
-      } else {
-        node.status({ fill, shape });
+      if (this.toomany === true) {
+        fill = 'blue';
       }
+      node.status({ fill, shape });
     };
 
     /**
@@ -134,7 +125,6 @@ module.exports = (RED) => {
       let output;
       switch (this.operator) {
         case GATE_AND:
-        case GATE_NAND:
           output = true;
           for (let i = 0; i < Object.keys(this.inputs).length; i += 1) {
             if (this.inputs[Object.keys(this.inputs)[i]] === false) {
@@ -144,7 +134,6 @@ module.exports = (RED) => {
           }
           break;
         case GATE_OR:
-        case GATE_NOR:
           output = false;
           for (let i = 0; i < Object.keys(this.inputs).length; i += 1) {
             if (this.inputs[Object.keys(this.inputs)[i]] === true) {
@@ -153,26 +142,16 @@ module.exports = (RED) => {
             }
           }
           break;
-        default: // GATE_NOT, GATE_ENTRANCE
+        default: // GATE_EQU
           for (let i = 0; i < Object.keys(this.inputs).length; i += 1) {
             output = this.inputs[Object.keys(this.inputs)[i]];
           }
-      }
-      switch (this.operator) {
-        case GATE_NAND:
-        case GATE_NOR:
-        case GATE_NOT:
-          output = !output;
-          break;
-        default:
-          break;
       }
       for (let i = 0; i < Object.keys(this.nodeinputs).length; i += 1) {
         const key = Object.keys(this.nodeinputs)[i];
         if (typeof this.inputs[key] !== 'boolean') return this.defaultOutput;
       }
       return output;
-
     };
 
     /**
@@ -183,7 +162,7 @@ module.exports = (RED) => {
      *
      */
     this.isReady = () => {
-      if (this.filter != '0') return false;
+      if (this.filter !== '0') return false;
       if (this.defaultOutput !== undefined) return true;
       for (let i = 0; i < Object.keys(this.nodeinputs).length; i += 1) {
         const key = Object.keys(this.inputs)[i];
@@ -202,47 +181,48 @@ module.exports = (RED) => {
       try {
         if (from.wires !== undefined) {
           if (from.wires.length > 0) {
-            for(let port=0; port < from.wires.length; port=port+1) {
+            for (let port = 0; port < from.wires.length; port += 1) {
               const to = from.wires[port];
-              for(let i=0; i < to.length; i=i+1) {
-                if (to[i] == node.id) {
+              for (let i = 0; i < to.length; i += 1) {
+                if (to[i] === node.id) {
                   this.nodeinputs[`${from.id}:${port}`] = {};
                 }
               }
             }
           }
         }
-      } catch(error) {
-         node.error('Problem when using unofficial API.'+error);
+      } catch (error) {
+        node.error(`Problem when using unofficial API.${error}`);
       }
     });
 
-    context.set('nodeinputs',this.nodeinputs);
-    context.set('id',node.id);
-    context.set('operator',this.operator);
+
+    if (this.operator === GATE_EQU) {
+      if (Object.keys(this.nodeinputs).length > 1) this.toomany = true;
+      this.nodeinputs = {};
+      this.nodeinputs[LOGICAL_INPUT_SINGLE] = {};
+    }
 
     this.inputs = {};
-    context.set('inputs', this.inputs);
     let filterTimer;
-    if (this.filter != '0') {
+    if (this.filter !== '0') {
       filterTimer = setTimeout(() => {
         this.filter = '0';
         this.defaultOutput = this.output;
         if (this.isReady()) {
-          node.send({ payload: this.value() });
+          const nodeValue = this.value();
+          node.send([{ payload: nodeValue }, { payload: !nodeValue }]);
         }
         this.updateStatus();
-      }, Number(this.filter)*1000);
+      }, Number(this.filter) * 1000);
     }
 
     this.on('close', () => {
       if (filterTimer) clearTimeout(filterTimer);
-      delete nodeinputs[node.id];
       delete gatenodes[node.id];
       this.nodeinputs = {};
     });
 
-    node.log(`End of startup for node ${node.id} ${this.operator}`);
     node.status({ fill: 'grey', shape: 'dot' });
     gatenodes[node.id] = {};
   }
@@ -252,7 +232,8 @@ module.exports = (RED) => {
   RED.hooks.add('preRoute', (sendEvent) => {
     // Messages to gate nodes will have topic set to port of source node
     if (gatenodes[sendEvent.destination.id] !== undefined) {
-      sendEvent.msg.topic = `${sendEvent.source.id}:${sendEvent.source.port}`;
+      const event = sendEvent;
+      event.msg.topic = `${sendEvent.source.id}:${sendEvent.source.port}`;
     }
   });
 };

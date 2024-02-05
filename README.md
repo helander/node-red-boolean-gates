@@ -6,12 +6,27 @@ With the help of Node-RED's wiring mechanism it is then possible to interconnect
 The boolean function of each node instance is configurable from the following selection:
  * AND
  * OR
- * NOT
- * NAND
- * NOR
+ * EQU
 
-In addition to this the selection also contains an 'Entrance' (or join) function (but more on this later).
+In addition to this, each gate has two outputs, one non-inverted and one inverted. This makes the set of gate functions to also inlude NAND, NOR and NOT.
 
+This component contains two extra node types, in addition to the boolean gate node type:
+ * boolean circuit generator
+ * boolean table
+
+The circuit generator creates a flow with boolean gates (and link nodes to connect to the flow). The input to the generator is a truth table, that defines the circuits response to the set
+of input combinations. The 'boolean table' node is used to simplify the creation of a truth table. Once the table node has been filled with data, send any message to it and it will 
+produce an output that could be directly fed to a generator node.
+
+Before you fill data into the table, you need to select its size, i.e. the number of inputs. Once you select the size, the number of rows adjust accordingly. Once you have saved
+a table node, its size could not be changed, but you can change the output values in the rows.
+
+The flow produced by the generator node can for example be sent (e.g. using an http-request node) to a node-red system's http admin interface, in order to create a flow with the
+given content (i.e. the boolean circuit).
+
+In case you want to 'embed' the boolean circuit into your own flows, just copy the nodes from the circuit flow and paste them into your flow. The link nodes may be omitted.
+
+Note, that the extra node types are not required in order to use the boolean gate node type. 
 
 # Install
 
@@ -61,16 +76,13 @@ This is actually the default way these node instances work. If you want this you
 
 ### Configuration options
 
-In addition to selecting the boolan function (or entrance function) of a node, the following configuration options are available:
+In addition to selecting the boolan function of a node, the following configuration options are available:
 * `Startup filter` - A time period, in seconds, during node startup when no node output is produced.
 * `Default output` - Select what to happen if not enough input is available. No output, true or false are the options. 
 This function is not available in case the `Startup filter` period is 0 seconds.
 
 It should be noted that, the application of these configurations might not be required on all nodes in a flow. If a node "early" in a flow do not produce output, that will impact other nodes further "down" the flow. In many cases, it may be enough to apply these configurations in the gate nodes where signals are entering the boolean "circuit".
 
-### Entrance function
-
-The entrance function regards all incoming wires as one single logical input. This means that the input value in any incoming message is instantly reflected in the nodes output. Of course, the `Startup filter` setting apply, so the output reflection may not be instant.
 
 # Implementation info
 
@@ -80,6 +92,8 @@ The component uses the Node-RED Messaging hook API to ensure that the topic of e
 
 Please see node help and provided examples.
 
-![Example flow for entrance node](/examples/inputtest.png)
+![Example flow for input values](/examples/inputtest.jpg)
 
 ![Example flow for a few gates](/examples/inoperation.jpg)
+
+![Example flow for generator](/examples/generator.jpg)

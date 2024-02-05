@@ -1,0 +1,54 @@
+
+<script type="text/html" data-template-name="boolean generator">
+
+</script>
+
+<script type="text/javascript">
+  /* global RED */
+  /* eslint no-undef: "error" */
+
+  RED.nodes.registerType('boolean generator', {
+    category: 'logic',
+    color: '#c7e9c0',
+    defaults: {
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-plus',
+    label() {
+      return 'generator';
+    },
+  });
+</script>
+
+
+<script type="text/html" data-help-name="boolean generator">
+<p>Generate a boolean circuit from a truth table.</p>
+
+<h3>Inputs</h3>
+     <ol class="node-ports">
+         <li>Table message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">object (see output of table node)</span></dt>
+                 <dd>truth table specification.</dd>
+             </dl>
+         </li>
+     </ol>
+
+<h3>Outputs</h3>
+
+     <ol class="node-ports">
+         <li>Flow message
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">flow specification</span></dt>
+                 <dd>a flow containing the boolean circuit.</dd>
+             </dl>
+         </li>
+     </ol>
+
+
+<h3>References</h3>
+    <ul>
+        <li><a href="https://github.com/helander/node-red-boolean-gates.git">GitHub</a> - the nodes github repository</li>
+    </ul>
+</script>

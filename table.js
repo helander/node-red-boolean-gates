@@ -34,7 +34,7 @@ module.exports = (RED) => {
         }
       }
       if (ones.length === 0) {
-        node.status({fill: 'red',text: 'No values in table.'});
+        node.status({ fill: 'red', text: 'No values in table.' });
       } else {
         node.status({});
         send([{ payload: { ones, dontcares } }]);

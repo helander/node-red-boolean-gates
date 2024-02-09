@@ -196,7 +196,6 @@ module.exports = (RED) => {
       }
     });
 
-
     if (this.operator === GATE_EQU) {
       if (Object.keys(this.nodeinputs).length > 1) this.toomany = true;
       this.nodeinputs = {};

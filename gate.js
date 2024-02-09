@@ -179,7 +179,7 @@ module.exports = (RED) => {
     // Find the wires leading to this node
     RED.nodes.eachNode((from) => {
       try {
-        if (from.wires !== undefined) {
+        if (from.d !== true && from.wires !== undefined) {
           if (from.wires.length > 0) {
             for (let port = 0; port < from.wires.length; port += 1) {
               const to = from.wires[port];
